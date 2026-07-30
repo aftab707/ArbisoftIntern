@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, String
@@ -19,6 +19,6 @@ class Task(Base):
     status: Mapped[str] = mapped_column(String(30), default="pending", nullable=False)
     priority: Mapped[str] = mapped_column(String(20), default="medium", nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
 
     user: Mapped["User"] = relationship(back_populates="tasks")

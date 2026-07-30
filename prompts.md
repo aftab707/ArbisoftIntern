@@ -335,3 +335,73 @@ deleted a missing task (`404`), created a user with a duplicate email
 (`400`), and created a user with a malformed email (`422`, from `EmailStr`
 validation). Every status code and error body matched what was specified.
 Stopped the test server and deleted the test `app.db` afterward.
+
+---
+
+### 9. Pytest + httpx test suite with an in-memory SQLite database
+
+**Prompt:**
+> Now let's add comprehensive unit and integration tests using pytest and
+> httpx. Requirements: Setup a test database runner in
+> backend/tests/conftest.py that uses an in-memory SQLite database so tests
+> don't affect development data. Write tests covering: Task creation with
+> valid and invalid data (Pydantic validation check). Reading all tasks and
+> single task retrieval. Updating task status/details. Deleting a task and
+> verifying 404 on subsequent requests. Verifying user-to-task relationship
+> binding. Ensure all tests run cleanly with pytest from the terminal.
+> Update prompts.md with details of tests generated
+
+**Result:**
+- `tests/conftest.py`: a `sqlite://` in-memory engine with `StaticPool` (so
+  every connection shares the same in-memory database instead of each
+  getting its own empty one — required for in-memory SQLite under
+  SQLAlchemy) and its own `TestingSessionLocal`. Overrides the app's
+  `get_db` dependency (`app.dependency_overrides[get_db] = ...`) so every
+  request in tests hits this database instead of the real
+  `sqlite:///./app.db`. An `autouse` fixture creates all tables before each
+  test and drops them after, so every test starts from a clean, empty
+  database. Also provides `client` (a `TestClient`), `db_session` (direct
+  ORM access for relationship-level tests), and `existing_user` (a ready-
+  made user for tests that need one).
+- `tests/test_tasks.py` (11 tests): task creation with valid data (201,
+  correct defaults) and invalid data (missing required field → 422 with the
+  right `loc`; wrong field type → 422; non-existent `user_id` → 404),
+  listing all tasks, filtering by `status` and `user_id` (including the
+  empty-list case), getting a single task (200) and a missing one (404),
+  updating a task's status/description/priority (200, fields actually
+  changed) and updating a missing task (404), and deleting a task (204)
+  followed by a 404 on both a subsequent `GET` and a second `DELETE`.
+- `tests/test_relationships.py` (3 tests): user-to-task binding checked two
+  ways — through the API (tasks created for a user are returned by
+  `?user_id=` filtering) and directly at the ORM level (`task.user.email`
+  and `user.tasks` both resolve correctly via `back_populates`), plus a
+  cascade-delete check (deleting a `User` removes their `Task`s, per the
+  `cascade="all, delete-orphan"` on the relationship).
+
+**Correction applied (test isolation from dev data):** Deliberately did
+*not* use `with TestClient(app) as client:` (the usual FastAPI testing
+idiom). Entering that context fires the app's `lifespan`, which calls
+`init_db()` — but `init_db()` reaches for the *real* engine in
+`app.database` (bound to `sqlite:///./app.db`), not the in-memory test one,
+because it's a plain module-level reference rather than something routed
+through the overridden dependency. Using a bare `TestClient(app)` skips
+lifespan entirely; routing still works identically, and table setup is
+already handled by the `reset_database` fixture against the test engine.
+Verified this actually matters: deleted `app.db`, ran the full suite, and
+confirmed immediately afterward that `app.db` was not recreated.
+
+**Correction applied (real deprecation warning in our own code):** The
+first test run passed but logged
+`datetime.datetime.utcnow() is deprecated ... use timezone-aware objects`,
+coming from `created_at: Mapped[datetime] = mapped_column(DateTime,
+default=datetime.utcnow)` in both `models/user.py` and `models/task.py`.
+Changed both to `default=lambda: datetime.now(UTC)`. Re-ran the suite —
+warning gone. (One remaining warning,
+`Using httpx with starlette.testclient is deprecated; install httpx2`, is
+a framework-level notice about `TestClient`'s internals, unrelated to this
+code — `httpx` itself was an explicit requirement, so left as is.)
+
+**Verification:** `ruff check .` — clean. `pytest -v` — **14/14 passed**.
+Confirmed test isolation from dev data as described above (no `app.db`
+touched by the suite, regardless of whether one already existed from
+manual `uvicorn` runs).
