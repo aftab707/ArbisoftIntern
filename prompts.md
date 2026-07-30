@@ -1,8 +1,8 @@
 # Prompts Log
 
 This file logs every significant prompt used with Claude Code to scaffold, build,
-and test the Week 1 Frontend Fundamentals project (`Week1/`), per the Arbisoft
-Internship Program 2026 AI Coding Ground Rules.
+and test this project across the Arbisoft Internship Program 2026, per the
+program's AI Coding Ground Rules.
 
 Format per entry: **Prompt**, what Claude did, and any correction applied if the
 AI output was wrong.
@@ -146,3 +146,71 @@ hamburger menu's ARIA state and CSS rules directly via DevTools-style
 inspection (the sandboxed browser preview used for this session doesn't
 composite frames for screenshots, so visual confirmation relied on DOM/CSSOM
 inspection rather than a rendered screenshot).
+
+---
+
+## 2026-07-30
+
+### 5. Move the app to the repo root and start the branch/PR workflow
+
+**Prompt:**
+> now what I want that I delete week1 folder and move all the files in
+> Aribisoft root folder and then I will commit and push on main branch then
+> I will create new branch named week2 ... Now you move all files like I
+> said then tell me other steps for week 2 and PR etc and make confirm that
+> my first week code is running
+
+**Result:** Moved every file out of `Week1/` up to the repo root (this is one
+evolving full-stack app across the internship weeks, not separate per-week
+folders) and deleted the now-empty `Week1/` directory. Updated
+`.claude/launch.json` and `CLAUDE.md`, which both still referenced the old
+`Week1/` path. Verified the app still worked after the move
+(`npm run lint`, `npm run test` — 3/3 passing, `npm run build`, and a live
+`npm run dev` boot returning HTTP 200) before committing. Committed the
+restructure + full Week 1 deliverable to `main` and pushed. Created a
+`week2` branch off the updated `main` and pushed it, ready for Week 2's work
+and a future PR back into `main`.
+
+### 6. Scaffold the Week 2 FastAPI backend
+
+**Prompt:**
+> I am starting Week 2: Backend, REST, CRUD & ORM of the Arbisoft
+> Internship. Please perform the following steps: Create a git branch named
+> week2 off of main. Scaffold a clean backend folder structure inside a
+> backend/ directory at the root (e.g., backend/app/main.py,
+> backend/app/database.py, backend/app/models/, backend/app/schemas/,
+> backend/app/routers/). Create a requirements.txt containing fastapi,
+> uvicorn, sqlalchemy, pydantic, ruff, pytest, httpx. Configure Ruff for
+> linting (create pyproject.toml or ruff.toml). Create a basic FastAPI entry
+> point in backend/app/main.py with a /health endpoint and CORS enabled so
+> our React frontend can connect later. Update prompts.md in the root
+> directory logging this prompt and actions taken.
+
+**Result:** The `week2` branch already existed from the previous prompt, so
+no new branch was needed. Scaffolded:
+- `backend/app/` with `main.py`, `database.py`, and empty `models/`,
+  `schemas/`, `routers/` packages (each with `__init__.py`).
+- `backend/app/database.py`: SQLAlchemy engine + `SessionLocal` +
+  declarative `Base`, defaulting to a local SQLite file
+  (`sqlite:///./app.db`) but overridable via a `DATABASE_URL` env var.
+- `backend/app/main.py`: FastAPI app with `CORSMiddleware` allowing
+  `http://localhost:5173` / `:5174` (the Vite dev server), and a `GET
+  /health` endpoint returning `{"status": "ok"}`.
+- `backend/requirements.txt`: `fastapi`, `uvicorn`, `sqlalchemy`, `pydantic`,
+  `ruff`, `pytest`, `httpx`.
+- `backend/pyproject.toml`: Ruff config (`line-length = 100`,
+  `target-version = "py312"`, rule sets `E, F, I, UP, B`, first-party import
+  recognized as `app`).
+- `backend/tests/__init__.py`: empty test package, ready for the CRUD/API
+  tests due later this week.
+- Extended the root `.gitignore` with Python-specific entries
+  (`backend/.venv`, `__pycache__`, `.pytest_cache`, `.ruff_cache`, `*.db`) —
+  the existing `.gitignore` was Node-only.
+
+**Verification:** Created a venv (`backend/.venv`), installed
+`requirements.txt`, ran `ruff check .` (clean), started the app with
+`uvicorn app.main:app --port 8000`, and confirmed `GET /health` returns
+`{"status":"ok"}` and an `OPTIONS` CORS preflight from
+`Origin: http://localhost:5173` returns `200`. Confirmed via `git add -A
+--dry-run` that `.venv`/`__pycache__` are correctly excluded before
+committing.
