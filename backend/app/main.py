@@ -1,7 +1,19 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Arbisoft Internship API")
+from app.database import init_db
+from app.routers import tasks, users
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+
+app = FastAPI(title="Arbisoft Internship API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,3 +30,7 @@ app.add_middleware(
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+app.include_router(users.router)
+app.include_router(tasks.router)

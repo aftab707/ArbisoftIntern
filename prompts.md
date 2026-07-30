@@ -214,3 +214,124 @@ no new branch was needed. Scaffolded:
 `Origin: http://localhost:5173` returns `200`. Confirmed via `git add -A
 --dry-run` that `.venv`/`__pycache__` are correctly excluded before
 committing.
+
+---
+
+### 7. SQLite + SQLAlchemy ORM models and Pydantic v2 schemas
+
+**Prompt:**
+> Now let's configure SQLite + SQLAlchemy ORM for our resource models.
+> Requirements: Setup SQLite database connection and session maker in
+> backend/app/database.py. Create standard ORM models in
+> backend/app/models/: User model (id, name, email, created_at). Task (or
+> Note) model (id, title, description, status, priority, user_id,
+> created_at). Establish a one-to-many relationship: User can have multiple
+> Tasks, and Task belongs to a User (back_populates). Create Pydantic (v2)
+> schemas in backend/app/schemas/ for request validation and response
+> formatting (TaskCreate, TaskResponse, UserCreate, UserResponse). Include
+> auto-creation of tables on startup or via a database initialization
+> script. Verify with Ruff and log this prompt/result in prompts.md.
+
+**Result:**
+- `database.py` already had the SQLite engine + `SessionLocal` from the
+  scaffold step; added `init_db()`, which lazily imports `app.models` (so
+  both model classes register on `Base`'s registry before mapper
+  configuration) and calls `Base.metadata.create_all(bind=engine)`.
+- `models/user.py`: `User` ORM model (`id`, `name`, `email` — unique/
+  indexed, `created_at`), with a `tasks` relationship
+  (`back_populates="user"`, `cascade="all, delete-orphan"`).
+- `models/task.py`: `Task` ORM model (`id`, `title`, `description`,
+  `status`, `priority`, `user_id` as a `ForeignKey("users.id")`,
+  `created_at`), with a `user` relationship (`back_populates="tasks"`).
+  Both models use SQLAlchemy 2.0's `Mapped`/`mapped_column` style, with the
+  relationship's target class referenced as a string and resolved via
+  `TYPE_CHECKING` imports to avoid a circular import between the two model
+  modules.
+- `models/__init__.py` imports both `User` and `Task` so importing
+  `app.models` anywhere (e.g. from `init_db()`) registers both mappers
+  together — required for the string-based relationship references to
+  resolve.
+- `schemas/user.py` / `schemas/task.py`: `UserCreate`, `UserResponse`,
+  `TaskCreate`, `TaskResponse` as Pydantic v2 `BaseModel`s. The `*Response`
+  schemas use `model_config = ConfigDict(from_attributes=True)` (the v2
+  replacement for `orm_mode`) so they can be built directly from ORM
+  instances. `UserCreate`/`UserResponse` use `EmailStr` for real email
+  validation, which required adding `email-validator` to
+  `requirements.txt` (Pydantic doesn't bundle it).
+- `main.py`: switched to FastAPI's `lifespan` context manager, calling
+  `init_db()` on startup so tables are auto-created the first time the app
+  runs — no manual migration step needed for this stage.
+
+**Verification:** `ruff check .` — clean. Deleted any stale `app.db`,
+booted the app fresh, confirmed `/health` still returns `200`, then
+inspected the generated SQLite file directly (`PRAGMA table_info`,
+`PRAGMA foreign_key_list`) to confirm both tables, all columns, and the
+`tasks.user_id → users.id` foreign key exist exactly as specified. Also
+ran a standalone script that creates a `User` and a `Task`, then reads
+back `user.tasks` and `task.user` through the ORM relationship in both
+directions, and serializes both through `UserResponse.model_validate(...)`
+/ `TaskResponse.model_validate(...)` to confirm the Pydantic schemas work
+against real ORM objects, not just plain dicts. Deleted the test `app.db`
+afterward so it doesn't get committed (already covered by `.gitignore`).
+
+---
+
+### 8. RESTful CRUD endpoints for Tasks (and Users)
+
+**Prompt:**
+> Let's implement the RESTful CRUD endpoints for Tasks and Users in
+> backend/app/routers/. Requirements: POST /api/v1/tasks/ - Create a task
+> (return 201 Created). GET /api/v1/tasks/ - List all tasks with optional
+> query filters (e.g., filter by status or user_id). GET
+> /api/v1/tasks/{task_id} - Get a single task (return 404 Not Found if
+> missing). PUT /api/v1/tasks/{task_id} - Update a task. DELETE
+> /api/v1/tasks/{task_id} - Delete a task (return 204 No Content). Validate
+> all request bodies using Pydantic schemas and ensure standard error
+> details are returned for HTTP exceptions. Register the router in
+> main.py. Log the prompt and work in prompts.md
+
+**Result:**
+- `routers/tasks.py`: full CRUD exactly as specified — `POST /api/v1/tasks/`
+  (201, 404 if `user_id` doesn't reference a real user), `GET
+  /api/v1/tasks/` (optional `status` and `user_id` query filters — `status`
+  aliased via `Query(alias="status")` so the query param name doesn't
+  collide with the `fastapi.status` module import used for status codes),
+  `GET /api/v1/tasks/{task_id}` (404 if missing), `PUT
+  /api/v1/tasks/{task_id}` (404 if task or referenced user missing), `DELETE
+  /api/v1/tasks/{task_id}` (204, 404 if missing).
+- `routers/users.py`: the prompt's title said "Tasks **and Users**" but only
+  detailed Task requirements. Added a minimal Users router anyway (`POST`,
+  `GET` list, `GET` by id, 404s, 400 on duplicate email) because without it
+  there'd be no way to create a `User` through the API at all, and
+  `TaskCreate.user_id` requires one to exist — the Task endpoints would be
+  untestable through the API otherwise. Did not add `PUT`/`DELETE` for
+  users since that wasn't asked for and isn't needed yet.
+- `main.py`: registered both routers with `app.include_router(...)`.
+- Error responses rely on FastAPI's default `HTTPException` →
+  `{"detail": "..."}` shape (already "standard" for this framework) rather
+  than a custom exception handler — no extra code needed to satisfy that
+  requirement.
+
+**Correction applied (Ruff false positive):** `ruff check` initially failed
+with 8 `B008` errors ("Do not perform function call `Depends` in argument
+defaults") on every route using `Depends(get_db)` / `Query(...)` — this is
+flake8-bugbear flagging FastAPI's required dependency-injection pattern,
+which the framework's own docs explicitly recommend. Fixed by adding
+`[tool.ruff.lint.flake8-bugbear] extend-immutable-calls = ["fastapi.Depends",
+"fastapi.Query"]` to `pyproject.toml`, the documented way to tell Ruff these
+calls are safe as defaults — not by disabling the rule outright.
+
+**Verification:** `ruff check .` — clean. Booted the app fresh and drove
+the entire CRUD lifecycle through real HTTP requests (not just imports):
+created a user (`201`), created two tasks (`201`, defaults applied
+correctly), listed all tasks and filtered by `?status=done` and
+`?user_id=1`/`?user_id=999` (correct subsets, empty list for no match), got
+a task by id (`200`) and a missing one (`404`), updated a task (`200`,
+fields changed) and updated a missing one (`404`), created a task with a
+non-existent `user_id` (`404`), created a task with a missing required
+field (`422` with FastAPI's standard validation error shape), deleted a
+task (`204`, then confirmed a subsequent `GET` on it returns `404`),
+deleted a missing task (`404`), created a user with a duplicate email
+(`400`), and created a user with a malformed email (`422`, from `EmailStr`
+validation). Every status code and error body matched what was specified.
+Stopped the test server and deleted the test `app.db` afterward.
