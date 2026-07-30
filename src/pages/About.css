@@ -1,0 +1,79 @@
+.about-page {
+  padding: 64px 0 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+
+.about-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+}
+
+.about-intro p {
+  color: var(--text);
+  font-size: 16px;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  padding-left: 8px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--border);
+}
+
+.timeline-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  position: relative;
+}
+
+.timeline-index {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  z-index: 1;
+}
+
+.timeline-item h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.timeline-item p {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.stack h2 {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+.stack-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

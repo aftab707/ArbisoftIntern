@@ -1,0 +1,25 @@
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 0;
+  margin-top: 64px;
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.footer-stack {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-stack img {
+  height: 16px;
+}
