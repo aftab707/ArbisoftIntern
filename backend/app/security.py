@@ -61,3 +61,31 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
+        )
+    return current_user
+
+
+def bootstrap_admin_user(db: Session) -> None:
+    email = os.getenv("ADMIN_EMAIL")
+    password = os.getenv("ADMIN_PASSWORD")
+    if not email or not password:
+        return
+
+    existing = db.query(User).filter(User.email == email).first()
+    if existing is not None:
+        return
+
+    admin = User(
+        name=os.getenv("ADMIN_NAME", "Admin"),
+        email=email,
+        hashed_password=hash_password(password),
+        role="admin",
+    )
+    db.add(admin)
+    db.commit()

@@ -60,6 +60,13 @@ def test_login_unknown_email_returns_401(client):
     assert response.status_code == 401
 
 
+def test_me_returns_current_user(client, existing_user, auth_headers):
+    response = client.get("/api/v1/auth/me", headers=auth_headers)
+
+    assert response.status_code == 200
+    assert response.json()["email"] == existing_user["email"]
+
+
 def test_protected_route_without_token_returns_401(client):
     response = client.get("/api/v1/tasks/")
 
@@ -113,3 +120,24 @@ def test_full_happy_path_register_login_and_manage_tasks(client):
 
     final_get = client.get(f"/api/v1/tasks/{task['id']}", headers=headers)
     assert final_get.status_code == 404
+
+
+def test_admin_can_promote_a_user_to_admin(client, existing_user, admin_headers):
+    response = client.patch(
+        f"/api/v1/users/{existing_user['id']}/role",
+        json={"role": "admin"},
+        headers=admin_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["role"] == "admin"
+
+
+def test_non_admin_cannot_promote_a_user_returns_403(client, existing_user, auth_headers):
+    response = client.patch(
+        f"/api/v1/users/{existing_user['id']}/role",
+        json={"role": "admin"},
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 403

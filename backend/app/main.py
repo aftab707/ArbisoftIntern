@@ -3,13 +3,19 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import init_db
+from app.database import SessionLocal, init_db
 from app.routers import auth, tasks, users
+from app.security import bootstrap_admin_user
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    db = SessionLocal()
+    try:
+        bootstrap_admin_user(db)
+    finally:
+        db.close()
     yield
 
 

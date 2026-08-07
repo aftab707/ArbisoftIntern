@@ -6,7 +6,7 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="container footer-inner">
-        <p>Week 1 · Arbisoft Internship Program 2026</p>
+        <p>TaskFlow · Arbisoft Internship Program 2026</p>
         <p className="footer-stack">
           Built with
           <img src={reactLogo} alt="React" />

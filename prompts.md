@@ -14,6 +14,7 @@ AI output was wrong.
 ### 1. Scaffold the project
 
 **Prompt:**
+
 > in my folder arbisoft intern there is another folder named week1 in that
 > folder create a project of react vite in react js and Include ESLint and
 > Prettier for linting and formatting. Run npm install afterwards to make sure
@@ -46,6 +47,7 @@ via `eslint --fix`, then ran `prettier --write .` to normalize formatting.
 ### 2. Initialize git and push to GitHub
 
 **Prompt:**
+
 > Initialize git in ArbisoftIntern folder, commit all current files with the
 > message 'Initial commit: React Vite setup', add the remote origin
 > git remote add origin https://github.com/aftab707/ArbisoftIntern.git , and
@@ -61,6 +63,7 @@ branch to `main`, and pushed with `git push -u origin main`.
 ### 3. Build Week 1 assignment features
 
 **Prompt:**
+
 > [Uploaded internship program outline PDF] ... Add React Router DOM. Create a
 > shared Layout with a Navbar, and set up 3 pages/routes: Home, About, and
 > Contact. Create a Contact form on the Contact route with inputs for Name,
@@ -71,6 +74,7 @@ branch to `main`, and pushed with `git push -u origin main`.
 > far to scaffold and build this app.
 
 **Result:** (this entry — see commits/diffs in `Week1/` for the implementation)
+
 - Installed `react-router-dom`; added `Layout` component with a `Navbar` and
   `<Outlet />`, and `Home`, `About`, `Contact` route pages.
 - Built a `Contact` form (Name, Email, Message) with client-side validation:
@@ -96,12 +100,14 @@ branch to `main`, and pushed with `git push -u origin main`.
 ### 4. Modernize the visual design
 
 **Prompt:**
+
 > make it modern design interactive through which my instructor impress
 > because you are claude it is best for coding be a professional frontend
 > designer
 
 **Result:** Full visual redesign on top of the existing routing/form/test
 structure, without changing app behavior the tests depend on:
+
 - Added a light/dark theme system (CSS custom properties in `index.css`,
   `ThemeToggle` component, persisted to `localStorage`, applied before paint
   via an inline script in `index.html` to avoid a flash of the wrong theme).
@@ -154,6 +160,7 @@ inspection rather than a rendered screenshot).
 ### 5. Move the app to the repo root and start the branch/PR workflow
 
 **Prompt:**
+
 > now what I want that I delete week1 folder and move all the files in
 > Aribisoft root folder and then I will commit and push on main branch then
 > I will create new branch named week2 ... Now you move all files like I
@@ -174,6 +181,7 @@ and a future PR back into `main`.
 ### 6. Scaffold the Week 2 FastAPI backend
 
 **Prompt:**
+
 > I am starting Week 2: Backend, REST, CRUD & ORM of the Arbisoft
 > Internship. Please perform the following steps: Create a git branch named
 > week2 off of main. Scaffold a clean backend folder structure inside a
@@ -188,6 +196,7 @@ and a future PR back into `main`.
 
 **Result:** The `week2` branch already existed from the previous prompt, so
 no new branch was needed. Scaffolded:
+
 - `backend/app/` with `main.py`, `database.py`, and empty `models/`,
   `schemas/`, `routers/` packages (each with `__init__.py`).
 - `backend/app/database.py`: SQLAlchemy engine + `SessionLocal` +
@@ -195,7 +204,7 @@ no new branch was needed. Scaffolded:
   (`sqlite:///./app.db`) but overridable via a `DATABASE_URL` env var.
 - `backend/app/main.py`: FastAPI app with `CORSMiddleware` allowing
   `http://localhost:5173` / `:5174` (the Vite dev server), and a `GET
-  /health` endpoint returning `{"status": "ok"}`.
+/health` endpoint returning `{"status": "ok"}`.
 - `backend/requirements.txt`: `fastapi`, `uvicorn`, `sqlalchemy`, `pydantic`,
   `ruff`, `pytest`, `httpx`.
 - `backend/pyproject.toml`: Ruff config (`line-length = 100`,
@@ -220,6 +229,7 @@ committing.
 ### 7. SQLite + SQLAlchemy ORM models and Pydantic v2 schemas
 
 **Prompt:**
+
 > Now let's configure SQLite + SQLAlchemy ORM for our resource models.
 > Requirements: Setup SQLite database connection and session maker in
 > backend/app/database.py. Create standard ORM models in
@@ -233,6 +243,7 @@ committing.
 > script. Verify with Ruff and log this prompt/result in prompts.md.
 
 **Result:**
+
 - `database.py` already had the SQLite engine + `SessionLocal` from the
   scaffold step; added `init_db()`, which lazily imports `app.models` (so
   both model classes register on `Base`'s registry before mapper
@@ -279,6 +290,7 @@ afterward so it doesn't get committed (already covered by `.gitignore`).
 ### 8. RESTful CRUD endpoints for Tasks (and Users)
 
 **Prompt:**
+
 > Let's implement the RESTful CRUD endpoints for Tasks and Users in
 > backend/app/routers/. Requirements: POST /api/v1/tasks/ - Create a task
 > (return 201 Created). GET /api/v1/tasks/ - List all tasks with optional
@@ -291,14 +303,15 @@ afterward so it doesn't get committed (already covered by `.gitignore`).
 > main.py. Log the prompt and work in prompts.md
 
 **Result:**
+
 - `routers/tasks.py`: full CRUD exactly as specified — `POST /api/v1/tasks/`
   (201, 404 if `user_id` doesn't reference a real user), `GET
-  /api/v1/tasks/` (optional `status` and `user_id` query filters — `status`
+/api/v1/tasks/` (optional `status` and `user_id` query filters — `status`
   aliased via `Query(alias="status")` so the query param name doesn't
   collide with the `fastapi.status` module import used for status codes),
   `GET /api/v1/tasks/{task_id}` (404 if missing), `PUT
-  /api/v1/tasks/{task_id}` (404 if task or referenced user missing), `DELETE
-  /api/v1/tasks/{task_id}` (204, 404 if missing).
+/api/v1/tasks/{task_id}` (404 if task or referenced user missing), `DELETE
+/api/v1/tasks/{task_id}` (204, 404 if missing).
 - `routers/users.py`: the prompt's title said "Tasks **and Users**" but only
   detailed Task requirements. Added a minimal Users router anyway (`POST`,
   `GET` list, `GET` by id, 404s, 400 on duplicate email) because without it
@@ -341,6 +354,7 @@ Stopped the test server and deleted the test `app.db` afterward.
 ### 9. Pytest + httpx test suite with an in-memory SQLite database
 
 **Prompt:**
+
 > Now let's add comprehensive unit and integration tests using pytest and
 > httpx. Requirements: Setup a test database runner in
 > backend/tests/conftest.py that uses an in-memory SQLite database so tests
@@ -352,6 +366,7 @@ Stopped the test server and deleted the test `app.db` afterward.
 > Update prompts.md with details of tests generated
 
 **Result:**
+
 - `tests/conftest.py`: a `sqlite://` in-memory engine with `StaticPool` (so
   every connection shares the same in-memory database instead of each
   getting its own empty one — required for in-memory SQLite under
@@ -379,9 +394,9 @@ Stopped the test server and deleted the test `app.db` afterward.
   `cascade="all, delete-orphan"` on the relationship).
 
 **Correction applied (test isolation from dev data):** Deliberately did
-*not* use `with TestClient(app) as client:` (the usual FastAPI testing
+_not_ use `with TestClient(app) as client:` (the usual FastAPI testing
 idiom). Entering that context fires the app's `lifespan`, which calls
-`init_db()` — but `init_db()` reaches for the *real* engine in
+`init_db()` — but `init_db()` reaches for the _real_ engine in
 `app.database` (bound to `sqlite:///./app.db`), not the in-memory test one,
 because it's a plain module-level reference rather than something routed
 through the overridden dependency. Using a bare `TestClient(app)` skips
@@ -413,6 +428,7 @@ manual `uvicorn` runs).
 ### 10. Week 3: JWT authentication + role-based authorization on the Week 2 API
 
 **Prompt:**
+
 > ab week3 ka kaam start kro coding kro aur login aur signup banao aur aur
 > phr mujhe batao ache se kr k hum test kre ge aur prompts.md ko bhi update
 > kr dena
@@ -422,13 +438,14 @@ manual `uvicorn` runs).
 auth: login/signup, before moving on to the frontend login/signup pages.)
 
 **Result:**
+
 - `User` model (`app/models/user.py`): added `hashed_password` (`String`,
   not nullable) and `role` (`String`, default `"user"`) columns.
 - `app/security.py` (new): `hash_password`/`verify_password` (bcrypt),
   `create_access_token`/`_decode_token` (PyJWT, HS256, 60-minute expiry,
   `SECRET_KEY` from a `SECRET_KEY` env var with a dev-only default), and a
   `get_current_user` FastAPI dependency that reads the `Authorization:
-  Bearer <token>` header (`fastapi.security.HTTPBearer`) and loads the
+Bearer <token>` header (`fastapi.security.HTTPBearer`) and loads the
   matching `User` row, raising `401` on any invalid/expired/unknown token.
 - `app/schemas/auth.py` (new): `UserSignup` (name, email, password —
   `min_length=8`), `UserLogin` (email, password), `Token` (access_token,
@@ -489,3 +506,111 @@ a user, logged in and got a real JWT, created a task with the token
 **Next up:** frontend Login/Signup pages, an auth context storing the JWT
 in `localStorage` (per explicit choice over httpOnly cookies, to keep this
 scope simple), and wiring the Tasks UI to the now-protected API.
+
+---
+
+### 11. Admin bootstrap + role-promote endpoint, then a full frontend rebuild on top of the auth API
+
+**Prompt:**
+
+> chlo abhi push k lie command batao PR LAST mein kre ge
+> (then, after pushing) ab development start kro jo uper hum ne decide kia
+> frontend backend connectivity etc aur name sb ab start kro
+
+Before coding, the plan was discussed and three decisions were confirmed
+with the user: (1) the first admin account is created via a startup seed/
+bootstrap (env vars), not a signup-time secret code; (2) the app is
+renamed from the Vite-default `week1` to **TaskFlow**; (3) the existing
+Home/About/Contact pages stay as public marketing pages (with a
+Login/Signup call-to-action), while a new authenticated Tasks dashboard
+and an admin-only Users page sit behind route guards.
+
+**Backend result:**
+
+- `UserRoleUpdate` schema (`schemas/auth.py`) + `require_admin` and
+  `bootstrap_admin_user` (`app/security.py`).
+- `PATCH /api/v1/users/{id}/role` (admin-only, 403 otherwise) so an admin
+  can promote/demote any user.
+- `app/main.py` lifespan now also calls `bootstrap_admin_user(db)` on
+  startup — if `ADMIN_EMAIL`/`ADMIN_PASSWORD` env vars are set and no user
+  with that email exists yet, it creates one with `role="admin"`. No-op
+  (and safely idempotent) if the env vars are unset or the user already
+  exists.
+- `GET /api/v1/auth/me` — added because `POST /auth/login` only ever
+  returned a token, not the user's id/name/role, and the frontend needs
+  "who am I" to drive the UI (nav links, admin gating) after login or on
+  page reload.
+- New tests: `tests/test_admin_bootstrap.py` (creates the admin when env
+  vars are set, is idempotent on a second call, no-ops when unset) and,
+  in `tests/test_auth.py`, promote-as-admin (200) and promote-as-non-admin
+  (403), plus a `/auth/me` test. **30/30 pytest passing**, `ruff check`
+  clean.
+
+**Frontend result — full rebuild on top of the auth API:**
+
+- Rebrand: `package.json` name, `index.html` `<title>`, the
+  `localStorage` theme key, and the footer text all changed from
+  `week1`/"Week One" to **TaskFlow**.
+- `src/api/client.js`: a single `fetch` wrapper — attaches the
+  `Authorization: Bearer` header from `localStorage` automatically, and
+  on any `401` dispatches a `taskflow:unauthorized` window event so the
+  auth layer can react without every call site handling it.
+- `src/context/AuthContext.jsx`: holds the current user + token, restores
+  the session from `localStorage` on load (via `/auth/me`), and exposes
+  `login`/`register`/`logout`.
+- `src/components/ProtectedRoute.jsx`: `ProtectedRoute` (redirects to
+  `/login` if logged out) and `AdminRoute` (redirects non-admins away
+  from `/users`).
+- New pages: `Login`, `Signup` (client-side validated via
+  `utils/validateAuth.js`, mirroring the existing `validateContact.js`
+  pattern), `Tasks` (create/edit/delete/status-filter, using every Task
+  endpoint), `Users` (admin-only table with a promote/revoke button per
+  row, using the new role-promote endpoint).
+- `Navbar` is now auth-aware (Tasks/Users links appear based on
+  login/role state, shows the user's name + role badge, Login/Signup vs.
+  Logout), and `Home`'s hero CTA switches between "Get started/Log in"
+  and "Go to your tasks" depending on auth state.
+- New tests: `Login.test.jsx`, `Signup.test.jsx` (empty-form and
+  invalid-input validation), `ProtectedRoute.test.jsx` (unauthenticated
+  visit to a guarded route redirects to `/login`). Updated
+  `Navbar.test.jsx` to wrap `AuthProvider` since `Navbar` now calls
+  `useAuth()`. **8/8 Vitest passing**, `eslint`/`prettier` clean, `vite
+build` succeeds.
+
+**Correction applied (real bug found via browser testing, not just unit
+tests):** `Navbar`'s `handleLogout` called `logout()` then
+`navigate('/')`, intending to land on the Home page after logout. In the
+browser it consistently landed on `/login` instead — `ProtectedRoute`'s
+own redirect (triggered because `isAuthenticated` flips to `false` while
+still positioned on `/tasks`) won the race against the manual
+`navigate('/')`, which appears to be scheduled at a lower priority
+internally by React Router. Since ending up on `/login` after logging
+out of a protected page is itself normal, reasonable behavior (not a
+security or functional problem), the fix was to delete the redundant
+`navigate('/')` call rather than fight the race — the guard's own
+redirect now does the only navigating, so there's nothing left to race
+against. This was caught by driving the real UI in a browser
+(Playwright), not by the unit test suite, which had no reason to catch a
+router-timing issue.
+
+**Verification:**
+
+- Backend: `ruff check .` clean, `pytest -v` — 30/30 passing.
+- Frontend: `eslint`, `prettier --check`, `vitest run` (8/8), `vite
+build` — all clean.
+- API-level manual check via `curl` against a live `uvicorn` server:
+  bootstrapped an admin via `ADMIN_EMAIL`/`ADMIN_PASSWORD`, logged in as
+  admin and as a freshly-registered normal user, confirmed the normal
+  user gets `403` promoting themselves and the admin gets `200` promoting
+  them.
+- Full browser walkthrough via a temporary Playwright script (installed,
+  used, then removed — not a project dependency) driving the real Vite
+  dev server against the real backend: sign up → land on `/tasks` →
+  create a task → edit it → filter by status → delete it → log out
+  (lands on `/login`) → confirm a logged-out visit to `/tasks` redirects
+  to `/login` → log in as the bootstrapped admin → open `/users` →
+  promote the earlier user to admin, with the table updating live. Zero
+  browser console/page errors across the whole flow. Screenshots were
+  captured at each step for visual confirmation. This is the one bug the
+  session found (see above) — it only showed up under real browser
+  navigation, not in isolated component tests.

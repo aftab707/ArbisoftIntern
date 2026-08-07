@@ -109,6 +109,25 @@
   font-weight: 600;
 }
 
+.navbar-auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.navbar-role-badge {
+  text-transform: capitalize;
+}
+
 .theme-toggle {
   display: inline-flex;
   align-items: center;

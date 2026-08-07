@@ -1,0 +1,52 @@
+.users-page {
+  padding: 48px 0 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.users-page p {
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.users-table-wrap {
+  overflow-x: auto;
+  padding: 8px;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 480px;
+}
+
+.users-table th,
+.users-table td {
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.users-table th {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+
+.badge-role-admin {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.badge-role-user {
+  background: var(--bg-subtle);
+  color: var(--text);
+}
