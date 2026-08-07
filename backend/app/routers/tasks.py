@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Task, User
 from app.schemas import TaskCreate, TaskResponse
+from app.security import get_current_user
 
 router = APIRouter(prefix="/api/v1/tasks", tags=["tasks"])
 
@@ -15,16 +16,21 @@ def _get_task_or_404(task_id: int, db: Session) -> Task:
     return task
 
 
-def _ensure_user_exists(user_id: int, db: Session) -> None:
-    if db.get(User, user_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+def _ensure_owner_or_admin(task: Task, current_user: User) -> None:
+    if task.user_id != current_user.id and current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to modify this task",
+        )
 
 
 @router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
-def create_task(payload: TaskCreate, db: Session = Depends(get_db)) -> Task:
-    _ensure_user_exists(payload.user_id, db)
-
-    task = Task(**payload.model_dump())
+def create_task(
+    payload: TaskCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Task:
+    task = Task(**payload.model_dump(), user_id=current_user.id)
     db.add(task)
     db.commit()
     db.refresh(task)
@@ -34,6 +40,7 @@ def create_task(payload: TaskCreate, db: Session = Depends(get_db)) -> Task:
 @router.get("/", response_model=list[TaskResponse])
 def list_tasks(
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
     status_filter: str | None = Query(default=None, alias="status"),
     user_id: int | None = Query(default=None),
 ) -> list[Task]:
@@ -46,14 +53,23 @@ def list_tasks(
 
 
 @router.get("/{task_id}", response_model=TaskResponse)
-def get_task(task_id: int, db: Session = Depends(get_db)) -> Task:
+def get_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Task:
     return _get_task_or_404(task_id, db)
 
 
 @router.put("/{task_id}", response_model=TaskResponse)
-def update_task(task_id: int, payload: TaskCreate, db: Session = Depends(get_db)) -> Task:
+def update_task(
+    task_id: int,
+    payload: TaskCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Task:
     task = _get_task_or_404(task_id, db)
-    _ensure_user_exists(payload.user_id, db)
+    _ensure_owner_or_admin(task, current_user)
 
     for field, value in payload.model_dump().items():
         setattr(task, field, value)
@@ -64,7 +80,12 @@ def update_task(task_id: int, payload: TaskCreate, db: Session = Depends(get_db)
 
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_task(task_id: int, db: Session = Depends(get_db)) -> None:
+def delete_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
     task = _get_task_or_404(task_id, db)
+    _ensure_owner_or_admin(task, current_user)
     db.delete(task)
     db.commit()

@@ -405,3 +405,87 @@ code — `httpx` itself was an explicit requirement, so left as is.)
 Confirmed test isolation from dev data as described above (no `app.db`
 touched by the suite, regardless of whether one already existed from
 manual `uvicorn` runs).
+
+---
+
+## 2026-08-07
+
+### 10. Week 3: JWT authentication + role-based authorization on the Week 2 API
+
+**Prompt:**
+> ab week3 ka kaam start kro coding kro aur login aur signup banao aur aur
+> phr mujhe batao ache se kr k hum test kre ge aur prompts.md ko bhi update
+> kr dena
+
+(Start Week 3 on a new `week3` branch — created off `week2` since the
+`week2` PR to `main` is still pending mentor review — build the backend
+auth: login/signup, before moving on to the frontend login/signup pages.)
+
+**Result:**
+- `User` model (`app/models/user.py`): added `hashed_password` (`String`,
+  not nullable) and `role` (`String`, default `"user"`) columns.
+- `app/security.py` (new): `hash_password`/`verify_password` (bcrypt),
+  `create_access_token`/`_decode_token` (PyJWT, HS256, 60-minute expiry,
+  `SECRET_KEY` from a `SECRET_KEY` env var with a dev-only default), and a
+  `get_current_user` FastAPI dependency that reads the `Authorization:
+  Bearer <token>` header (`fastapi.security.HTTPBearer`) and loads the
+  matching `User` row, raising `401` on any invalid/expired/unknown token.
+- `app/schemas/auth.py` (new): `UserSignup` (name, email, password —
+  `min_length=8`), `UserLogin` (email, password), `Token` (access_token,
+  token_type). Removed the now-unused `UserCreate` schema (replaced by
+  `UserSignup`); added `role` to `UserResponse`.
+- `app/routers/auth.py` (new): `POST /api/v1/auth/register` (hashes the
+  password, 400 on duplicate email, 201 + `UserResponse` — never echoes the
+  password back) and `POST /api/v1/auth/login` (verifies credentials, 401 on
+  mismatch, returns a `Token`).
+- `app/routers/tasks.py`: every endpoint now requires
+  `Depends(get_current_user)`. `POST /` no longer takes `user_id` in the
+  body — it's derived from the authenticated user, so a client can't create
+  a task on someone else's behalf. `PUT`/`DELETE` added an authorization
+  rule (`_ensure_owner_or_admin`): only the task's owner, or a user with
+  `role == "admin"`, may update or delete it — everyone else gets `403`.
+- `app/routers/users.py`: removed the old public `POST /` (duplicated
+  `register`); `GET /` and `GET /{id}` now also require login.
+- `app/main.py`: registered the new `auth` router.
+- `backend/requirements.txt`: added `bcrypt`, `pyjwt`.
+
+**Correction applied (test suite needed a real rewrite, not a patch):**
+Removing `user_id` from `TaskCreate` and removing the public user-creation
+endpoint meant the entire Week 2 test suite's assumptions broke. Updated
+`tests/conftest.py`: `existing_user` now registers via `/api/v1/auth/register`
+(fixed password `"secret123"`); added `auth_headers` (registers +
+logs in, returns a ready `Authorization` header) and `other_user_headers`
+(a second, unrelated user — needed for authorization tests). Rewrote
+`tests/test_tasks.py` and `tests/test_relationships.py` to send
+`auth_headers` on every request and stop passing `user_id` in task
+payloads. Dropped two Week 2 tests that no longer make sense
+(`user_id`-in-body validation cases) and added two new ones:
+`test_update_task_owned_by_another_user_returns_403` and
+`test_delete_task_owned_by_another_user_returns_403`.
+
+**Correction applied (InsecureKeyLengthWarning):** PyJWT warned the
+31-byte dev default `SECRET_KEY` was below the 32-byte minimum recommended
+for HS256. Lengthened the dev-only default string by one word so it's
+32+ bytes; production deployments are still expected to set a real
+`SECRET_KEY` env var.
+
+**New file `tests/test_auth.py`** (9 tests): register (201, password never
+in the response body), duplicate email (400), password under 8 chars
+(422), login success (200 + bearer token) and failure (wrong password /
+unknown email → 401 either way, so login never reveals which part was
+wrong), a protected route with no token and with a garbage token (both
+401), and one full integration test covering the happy path end-to-end:
+register → login → create task → get task → update task → delete task →
+confirm 404 afterward.
+
+**Verification:** `ruff check .` — clean. `pytest -v` — **24/24 passed**
+(9 new auth tests + 15 updated/rewritten task & relationship tests).
+Also smoke-tested against a live `uvicorn` server with `curl`: registered
+a user, logged in and got a real JWT, created a task with the token
+(`201`), listed it back, and confirmed the same request with no
+`Authorization` header returns `401`. Deleted the manually-created
+`app.db` afterward — not part of the suite, not committed.
+
+**Next up:** frontend Login/Signup pages, an auth context storing the JWT
+in `localStorage` (per explicit choice over httpOnly cookies, to keep this
+scope simple), and wiring the Tasks UI to the now-protected API.

@@ -8,7 +8,6 @@ class TaskCreate(BaseModel):
     description: str | None = None
     status: str = "pending"
     priority: str = "medium"
-    user_id: int
 
 
 class TaskResponse(BaseModel):
