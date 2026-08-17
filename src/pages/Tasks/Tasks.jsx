@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useAuth } from '../context/AuthContext.jsx'
-import { api, ApiError } from '../api/client.js'
+import { useAuth } from '../../context/AuthContext.jsx'
+import { useToast } from '../../context/ToastContext.jsx'
+import { api, ApiError } from '../../api/client.js'
 import './Tasks.css'
 
 const STATUS_OPTIONS = ['pending', 'in_progress', 'done']
@@ -101,6 +102,7 @@ function TaskForm({ initialValues, submitLabel, onSubmit, onCancel }) {
 
 function Tasks() {
   const { user } = useAuth()
+  const toast = useToast()
   const [tasks, setTasks] = useState([])
   const [statusFilter, setStatusFilter] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -136,6 +138,7 @@ function Tasks() {
   async function handleCreate(values) {
     const created = await api.createTask(values)
     setTasks((prev) => [...prev, created])
+    toast.success('Task created.')
   }
 
   async function handleUpdate(taskId, values) {
@@ -144,11 +147,19 @@ function Tasks() {
       prev.map((task) => (task.id === taskId ? updated : task))
     )
     setEditingId(null)
+    toast.success('Task updated.')
   }
 
   async function handleDelete(taskId) {
-    await api.deleteTask(taskId)
-    setTasks((prev) => prev.filter((task) => task.id !== taskId))
+    try {
+      await api.deleteTask(taskId)
+      setTasks((prev) => prev.filter((task) => task.id !== taskId))
+      toast.success('Task deleted.')
+    } catch (error) {
+      toast.error(
+        error instanceof ApiError ? error.message : 'Could not delete the task.'
+      )
+    }
   }
 
   return (

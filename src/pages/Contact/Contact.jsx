@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { validateContact } from '../utils/validateContact.js'
+import { validateContact } from '../../utils/validateContact.js'
 import './Contact.css'
 
 const initialForm = { name: '', email: '', message: '' }

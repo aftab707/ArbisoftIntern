@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
-import { ApiError } from '../api/client.js'
-import { validateSignup } from '../utils/validateAuth.js'
-import './Auth.css'
+import { useAuth } from '../../context/AuthContext.jsx'
+import { ApiError } from '../../api/client.js'
+import { validateSignup } from '../../utils/validateAuth.js'
+import '../Auth.css'
 
 const icons = {
   name: (

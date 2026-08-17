@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import Reveal from '../components/Reveal.jsx'
-import { useAuth } from '../context/AuthContext.jsx'
+import Reveal from '../../components/Reveal.jsx'
+import { useAuth } from '../../context/AuthContext.jsx'
 import './Home.css'
 
 const features = [

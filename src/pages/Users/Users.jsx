@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useAuth } from '../context/AuthContext.jsx'
-import { api, ApiError } from '../api/client.js'
+import { useAuth } from '../../context/AuthContext.jsx'
+import { useToast } from '../../context/ToastContext.jsx'
+import { api, ApiError } from '../../api/client.js'
 import './Users.css'
 
 function Users() {
   const { user: currentUser } = useAuth()
+  const toast = useToast()
   const [users, setUsers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -24,12 +26,16 @@ function Users() {
 
   async function handleRoleChange(userId, role) {
     setUpdatingId(userId)
-    setError('')
     try {
       const updated = await api.updateUserRole(userId, role)
       setUsers((prev) => prev.map((u) => (u.id === userId ? updated : u)))
+      toast.success(
+        `${updated.name} is now ${role === 'admin' ? 'an admin' : 'a user'}.`
+      )
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Could not update role.')
+      toast.error(
+        err instanceof ApiError ? err.message : 'Could not update role.'
+      )
     } finally {
       setUpdatingId(null)
     }

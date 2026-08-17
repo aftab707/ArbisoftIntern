@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { AuthProvider } from '../context/AuthContext.jsx'
+import { AuthProvider } from '../../context/AuthContext.jsx'
 import Login from './Login.jsx'
 
 function renderLogin() {
