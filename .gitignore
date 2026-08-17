@@ -35,3 +35,11 @@ backend/**/__pycache__
 .pytest_cache
 .ruff_cache
 *.db
+
+# Python / week4-agentic-ai
+week4-agentic-ai/.venv
+week4-agentic-ai/venv
+week4-agentic-ai/week4env
+week4-agentic-ai/__pycache__
+week4-agentic-ai/**/__pycache__
+week4-agentic-ai/tool_calls.log

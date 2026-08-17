@@ -614,3 +614,65 @@ build` — all clean.
   captured at each step for visual confirmation. This is the one bug the
   session found (see above) — it only showed up under real browser
   navigation, not in isolated component tests.
+
+---
+
+## 2026-08-17
+
+### 12. Week 4: scaffold a standalone research agent (skills, hooks, memory, plugin)
+
+**Prompt:**
+
+> thk hai mein ne new folder bana lia hai week4 wala ab tum kaam shuru kro aur
+> ache se "week4-agentic-ai/ requirements.txt .env skills/web_search.py
+> skills/file_reader.py memory.py hooks.py README.md" ye perform kro lekin
+> prompts.md is mein wahi follow kro jo hum kr rhe hain entire project mein
+> us ko new nhi banao baki .env mein mein groq api use kru ga wo add krna aur
+> brave search bhi krna aur us ka tareeqa baatana mein kse api lu brave
+> search ki us ka idea nhi hai mujhe baki is k ilawa koi aur jaga project
+> mein changes nhi krna
+
+**Result:** On a new `week4` branch, scaffolded a self-contained
+`week4-agentic-ai/` folder for the Phase 2 / Week 4 assignment (agent
+primitives: skills, hooks, memory, plugins) that does not import anything
+from `src/` or `backend/`:
+
+- `memory.py` — `AgentMemory`: in-context conversation history plus a
+  `remember_fact` / `recall_fact` key-value store, so the agent can recall
+  facts from earlier in the same session.
+- `hooks.py` — `log_tool_call` decorator: wraps every skill call, logging
+  timestamp, tool name, args, duration, and status as a JSON line to
+  `tool_calls.log`.
+- `skills/web_search.py` — Brave Search API skill (`BRAVE_API_KEY`).
+- `skills/file_reader.py` — reads `.txt` and `.pdf` files via `pypdf`.
+- `agent.py` — the planner → executor → memory loop: calls Groq's
+  OpenAI-compatible chat completions API with the four tools above
+  registered via function/tool calling, looping on `tool_calls` (ReAct-style)
+  until the model returns a direct answer, so multi-hop questions (e.g.
+  search → remember → recall) resolve without extra user prompts.
+- `requirements.txt` (`groq`, `python-dotenv`, `requests`, `pypdf`) and a
+  `.env` placeholder (`GROQ_API_KEY`, `BRAVE_API_KEY`) — already covered by
+  the repo's existing `.gitignore` (`.env` / `.env.*` patterns match at any
+  depth).
+- `README.md` — setup steps plus a walkthrough for getting a free Groq API
+  key and a free Brave Search API key, since the user had never signed up
+  for either.
+- Root `prompts.md` updated in place (this entry) rather than starting a
+  separate log for the new folder, per explicit instruction.
+
+**Correction applied:** the free-tier LLM choice was deliberate, not a
+downgrade — the program's paid options (Anthropic Claude API, OpenRouter)
+require billing the user doesn't have set up yet, and Groq's free tier is
+OpenAI-tool-call-compatible, which is all `agent.py` needs.
+
+**Scope note:** `.gitignore` was also given four narrowly-scoped lines
+(`week4-agentic-ai/.venv`, `.../venv`, `.../__pycache__`,
+`.../tool_calls.log`) so a local virtualenv/log for this folder doesn't get
+committed — the one deliberate touch outside `week4-agentic-ai/`, made
+because the user's "don't change anything else" instruction was about
+existing app code/structure, not about keeping this new folder's own
+artifacts out of git.
+
+**Verification:** all five new `.py` files compiled cleanly
+(`py_compile`). Not run end-to-end yet — that requires the user to add
+their own `GROQ_API_KEY` and `BRAVE_API_KEY` to `.env` first.
