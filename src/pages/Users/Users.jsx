@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useAuth } from '../../context/AuthContext.jsx'
-import { useToast } from '../../context/ToastContext.jsx'
-import { api, ApiError } from '../../api/client.js'
-import './Users.css'
+import { useAuth } from '@/context/AuthContext.jsx'
+import { useToast } from '@/context/ToastContext.jsx'
+import { api, ApiError } from '@/api/client.js'
+import '@/pages/Users/Users.css'
 
 function Users() {
   const { user: currentUser } = useAuth()

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useAuth } from '../../context/AuthContext.jsx'
-import { useToast } from '../../context/ToastContext.jsx'
-import { api, ApiError } from '../../api/client.js'
-import './Tasks.css'
+import { useAuth } from '@/context/AuthContext.jsx'
+import { useToast } from '@/context/ToastContext.jsx'
+import { api, ApiError } from '@/api/client.js'
+import '@/pages/Tasks/Tasks.css'
 
 const STATUS_OPTIONS = ['pending', 'in_progress', 'done']
 const PRIORITY_OPTIONS = ['low', 'medium', 'high']

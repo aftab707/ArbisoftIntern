@@ -94,16 +94,7 @@ def asks_for_web_search(user_input: str) -> bool:
     """Catch obvious live-info prompts before the model tries malformed tool calls."""
     text = user_input.lower()
     search_words = ("search", "web", "current", "latest", "today", "version", "look up")
-    live_entities = (
-        "prime minister",
-        "president",
-        "ceo",
-        "mayor",
-        "governor",
-        "minister",
-        "price",
-        "weather",
-    )
+    live_entities = ( "prime minister", "president", "ceo", "mayor", "governor", "minister", "price", "weather",)
     question_starts = ("who is", "who's", "what is", "what's")
     return (
         any(word in text for word in search_words)

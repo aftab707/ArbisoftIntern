@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { AuthProvider } from '../context/AuthContext.jsx'
-import { ProtectedRoute } from './ProtectedRoute.jsx'
+import { AuthProvider } from '@/context/AuthContext.jsx'
+import { ProtectedRoute } from '@/components/ProtectedRoute.jsx'
 
 function renderAtTasks() {
   return render(

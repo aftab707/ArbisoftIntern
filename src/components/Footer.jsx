@@ -1,6 +1,6 @@
-import reactLogo from '../assets/react.svg'
-import viteLogo from '../assets/vite.svg'
-import './Footer.css'
+import reactLogo from '@/assets/react.svg'
+import viteLogo from '@/assets/vite.svg'
+import '@/components/Footer.css'
 
 function Footer() {
   return (

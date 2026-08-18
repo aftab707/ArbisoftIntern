@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext.jsx'
-import ThemeToggle from './ThemeToggle.jsx'
-import './Navbar.css'
+import { useAuth } from '@/context/AuthContext.jsx'
+import ThemeToggle from '@/components/ThemeToggle.jsx'
+import '@/components/Navbar.css'
 
 const publicLinks = [
   { to: '/', label: 'Home' },

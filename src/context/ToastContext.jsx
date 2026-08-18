@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useRef, useState } from 'react'
-import './ToastContext.css'
+import '@/context/ToastContext.css'
 
 const ToastContext = createContext(null)
 let nextId = 0

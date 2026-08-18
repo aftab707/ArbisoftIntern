@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { AuthProvider } from '../../context/AuthContext.jsx'
-import Signup from './Signup.jsx'
+import { AuthProvider } from '@/context/AuthContext.jsx'
+import Signup from '@/pages/Signup/Signup.jsx'
 
 function renderSignup() {
   return render(

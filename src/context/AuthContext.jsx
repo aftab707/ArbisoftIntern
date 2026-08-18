@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { api, TOKEN_STORAGE_KEY } from '../api/client.js'
+import { api, TOKEN_STORAGE_KEY } from '@/api/client.js'
 
 const AuthContext = createContext(null)
 
