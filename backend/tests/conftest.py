@@ -56,7 +56,53 @@ def db_session():
 @pytest.fixture
 def existing_user(client):
     response = client.post(
-        "/api/v1/users/",
-        json={"name": "Aftab", "email": "aftab@example.com"},
+        "/api/v1/auth/register",
+        json={"name": "Aftab", "email": "aftab@example.com", "password": "secret123"},
     )
     return response.json()
+
+
+@pytest.fixture
+def auth_headers(client, existing_user):
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"email": existing_user["email"], "password": "secret123"},
+    )
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def admin_headers(client, db_session):
+    from app.models import User
+    from app.security import hash_password
+
+    admin = User(
+        name="Admin",
+        email="admin@example.com",
+        hashed_password=hash_password("adminpass123"),
+        role="admin",
+    )
+    db_session.add(admin)
+    db_session.commit()
+
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"email": "admin@example.com", "password": "adminpass123"},
+    )
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def other_user_headers(client):
+    client.post(
+        "/api/v1/auth/register",
+        json={"name": "Other", "email": "other@example.com", "password": "secret123"},
+    )
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"email": "other@example.com", "password": "secret123"},
+    )
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}

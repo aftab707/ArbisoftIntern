@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { validateContact } from '../utils/validateContact.js'
-import './Contact.css'
-
-const initialForm = { name: '', email: '', message: '' }
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext.jsx'
+import { ApiError } from '../../api/client.js'
+import { validateSignup } from '../../utils/validateAuth.js'
+import '../Auth.css'
 
 const icons = {
   name: (
@@ -35,7 +36,7 @@ const icons = {
       <path d="m4 7 8 6 8-6" />
     </svg>
   ),
-  message: (
+  password: (
     <svg
       viewBox="0 0 24 24"
       width="18"
@@ -46,14 +47,21 @@ const icons = {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M4 5h16v11H8l-4 4z" />
+      <rect x="4" y="10" width="16" height="10" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
     </svg>
   ),
 }
 
-function Contact() {
+const initialForm = { name: '', email: '', password: '' }
+
+function Signup() {
+  const { register } = useAuth()
+  const navigate = useNavigate()
+
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState({})
+  const [apiError, setApiError] = useState('')
   const [status, setStatus] = useState('idle')
 
   function handleChange(event) {
@@ -61,70 +69,43 @@ function Contact() {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
-    const validationErrors = validateContact(form)
+    setApiError('')
+    const validationErrors = validateSignup(form)
     setErrors(validationErrors)
-
-    if (Object.keys(validationErrors).length > 0) {
-      setStatus('idle')
-      return
-    }
+    if (Object.keys(validationErrors).length > 0) return
 
     setStatus('submitting')
-    window.setTimeout(() => {
-      setStatus('success')
-      setForm(initialForm)
-    }, 400)
-  }
-
-  if (status === 'success') {
-    return (
-      <section className="contact-page">
-        <div className="container">
-          <div className="success-card">
-            <span className="success-icon" aria-hidden="true">
-              <svg
-                viewBox="0 0 24 24"
-                width="28"
-                height="28"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12l5 5 9-9" />
-              </svg>
-            </span>
-            <h2>Thanks! Your message has been sent.</h2>
-            <p>I’ll get back to you as soon as possible.</p>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setStatus('idle')}
-            >
-              Send another message
-            </button>
-          </div>
-        </div>
-      </section>
-    )
+    try {
+      await register(form.name, form.email, form.password)
+      navigate('/tasks', { replace: true })
+    } catch (error) {
+      setApiError(
+        error instanceof ApiError
+          ? error.message
+          : 'Something went wrong. Please try again.'
+      )
+      setStatus('idle')
+    }
   }
 
   return (
-    <section className="contact-page">
-      <div className="container contact-grid">
-        <div className="contact-info">
-          <span className="chip">Contact</span>
-          <h1>Let’s talk</h1>
-          <p>
-            Have a question about this project? Send a message and I’ll get back
-            to you.
-          </p>
-        </div>
+    <section className="auth-page">
+      <div className="container">
+        <form
+          className="card auth-card auth-form"
+          noValidate
+          onSubmit={handleSubmit}
+        >
+          <div className="auth-header">
+            <span className="chip">Get started</span>
+            <h1>Create your account</h1>
+            <p>Sign up to start tracking your tasks with TaskFlow.</p>
+          </div>
 
-        <form className="card contact-form" noValidate onSubmit={handleSubmit}>
+          {apiError && <p className="form-banner-error">{apiError}</p>}
+
           <div className="form-field">
             <label htmlFor="name">Name</label>
             <div className="input-wrap">
@@ -174,25 +155,27 @@ function Contact() {
           </div>
 
           <div className="form-field">
-            <label htmlFor="message">Message</label>
-            <div className="input-wrap input-wrap-textarea">
+            <label htmlFor="password">Password</label>
+            <div className="input-wrap">
               <span className="field-icon" aria-hidden="true">
-                {icons.message}
+                {icons.password}
               </span>
-              <textarea
-                id="message"
-                name="message"
-                rows="5"
-                value={form.message}
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={form.password}
                 onChange={handleChange}
-                aria-invalid={Boolean(errors.message)}
-                aria-describedby={errors.message ? 'message-error' : undefined}
-                placeholder="How can I help?"
+                aria-invalid={Boolean(errors.password)}
+                aria-describedby={
+                  errors.password ? 'password-error' : undefined
+                }
+                placeholder="At least 8 characters"
               />
             </div>
-            {errors.message && (
-              <p className="form-error" id="message-error">
-                {errors.message}
+            {errors.password && (
+              <p className="form-error" id="password-error">
+                {errors.password}
               </p>
             )}
           </div>
@@ -205,12 +188,16 @@ function Contact() {
             {status === 'submitting' && (
               <span className="spinner" aria-hidden="true" />
             )}
-            {status === 'submitting' ? 'Sending…' : 'Send message'}
+            {status === 'submitting' ? 'Creating account…' : 'Sign up'}
           </button>
+
+          <p className="auth-switch">
+            Already have an account? <Link to="/login">Log in</Link>
+          </p>
         </form>
       </div>
     </section>
   )
 }
 
-export default Contact
+export default Signup

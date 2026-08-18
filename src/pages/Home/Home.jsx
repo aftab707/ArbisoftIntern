@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
-import Reveal from '../components/Reveal.jsx'
+import Reveal from '../../components/Reveal.jsx'
+import { useAuth } from '../../context/AuthContext.jsx'
 import './Home.css'
 
 const features = [
   {
-    title: 'Client-side routing',
+    title: 'Task management',
     description:
-      'React Router powers three pages behind a single shared layout and navbar.',
+      'Create, update, and track tasks by status and priority — backed by a real REST API.',
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -18,15 +19,15 @@ const features = [
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M4 19V7l6-3 6 3 4-2v12l-4 2-6-3-6 3z" />
-        <path d="M10 4v13M16 7v13" />
+        <path d="M9 3h6M10 3v6l-5.5 9.5A1 1 0 0 0 5.4 20h13.2a1 1 0 0 0 .9-1.5L14 9V3" />
+        <path d="M8 15h8" />
       </svg>
     ),
   },
   {
-    title: 'Validated forms',
+    title: 'Secure by default',
     description:
-      'The contact form checks required fields and email format before it submits.',
+      'JWT authentication and role-based access control protect every task and user endpoint.',
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -46,7 +47,7 @@ const features = [
   {
     title: 'Tested with confidence',
     description:
-      'Vitest and React Testing Library cover rendering and validation behaviour.',
+      'Pytest on the API and Vitest on the UI cover CRUD, auth, and authorization behaviour.',
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -58,35 +59,48 @@ const features = [
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M9 3h6M10 3v6l-5.5 9.5A1 1 0 0 0 5.4 20h13.2a1 1 0 0 0 .9-1.5L14 9V3" />
-        <path d="M8 15h8" />
+        <path d="M4 19V7l6-3 6 3 4-2v12l-4 2-6-3-6 3z" />
+        <path d="M10 4v13M16 7v13" />
       </svg>
     ),
   },
 ]
 
 function Home() {
+  const { isAuthenticated } = useAuth()
+
   return (
     <>
       <section className="hero">
         <div className="hero-glow" aria-hidden="true" />
         <div className="container hero-inner">
-          <span className="chip">Week 1 · Frontend Fundamentals</span>
+          <span className="chip">
+            TaskFlow · Arbisoft Internship Program 2026
+          </span>
           <h1>
-            Building the <span className="gradient-text">fundamentals</span> of
-            modern web apps.
+            Stay on top of your <span className="gradient-text">tasks</span>,
+            together.
           </h1>
           <p className="hero-lead">
-            A small React + Vite app covering routing, layout, forms, and
-            testing — scaffolded and refined with Claude Code.
+            A full-stack task manager with JWT authentication and role-based
+            access — a React + Vite frontend backed by a FastAPI + SQLAlchemy
+            API.
           </p>
           <div className="hero-actions">
-            <Link to="/contact" className="btn btn-primary">
-              Get in touch
-            </Link>
-            <Link to="/about" className="btn btn-secondary">
-              Learn more
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/tasks" className="btn btn-primary">
+                Go to your tasks
+              </Link>
+            ) : (
+              <>
+                <Link to="/signup" className="btn btn-primary">
+                  Get started
+                </Link>
+                <Link to="/login" className="btn btn-secondary">
+                  Log in
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>

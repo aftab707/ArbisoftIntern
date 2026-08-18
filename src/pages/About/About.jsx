@@ -1,4 +1,4 @@
-import Reveal from '../components/Reveal.jsx'
+import Reveal from '../../components/Reveal.jsx'
 import './About.css'
 
 const timeline = [
