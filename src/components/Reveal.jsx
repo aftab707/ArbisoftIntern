@@ -1,4 +1,4 @@
-import { useReveal } from '../hooks/useReveal.js'
+import { useReveal } from '@/hooks/useReveal.js'
 
 function Reveal({ as: Tag = 'div', className = '', delay = 0, children }) {
   const [ref, visible] = useReveal()

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 function getInitialTheme() {
-  const stored = window.localStorage.getItem('week1-theme')
+  const stored = window.localStorage.getItem('taskflow-theme')
   if (stored === 'light' || stored === 'dark') return stored
   return window.matchMedia('(prefers-color-scheme: dark)').matches
     ? 'dark'
@@ -14,7 +14,7 @@ function ThemeToggle() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
-    window.localStorage.setItem('week1-theme', theme)
+    window.localStorage.setItem('taskflow-theme', theme)
   }, [theme])
 
   return (

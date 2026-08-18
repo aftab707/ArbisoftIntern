@@ -1,11 +1,14 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import Navbar from './Navbar.jsx'
+import { AuthProvider } from '@/context/AuthContext.jsx'
+import Navbar from '@/components/Navbar.jsx'
 
 test('renders a link for each of the Home, About, and Contact routes', () => {
   render(
     <MemoryRouter>
-      <Navbar />
+      <AuthProvider>
+        <Navbar />
+      </AuthProvider>
     </MemoryRouter>
   )
 

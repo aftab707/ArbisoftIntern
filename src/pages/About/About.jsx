@@ -1,5 +1,5 @@
-import Reveal from '../components/Reveal.jsx'
-import './About.css'
+import Reveal from '@/components/Reveal.jsx'
+import '@/pages/About/About.css'
 
 const timeline = [
   {

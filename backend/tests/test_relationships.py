@@ -1,24 +1,32 @@
 from app.models import Task, User
+from app.security import hash_password
 
 
 def test_tasks_created_for_a_user_are_returned_by_user_id_filter(client):
-    user = client.post(
-        "/api/v1/users/", json={"name": "Relationship User", "email": "rel@example.com"}
+    client.post(
+        "/api/v1/auth/register",
+        json={"name": "Relationship User", "email": "rel@example.com", "password": "secret123"},
+    )
+    login = client.post(
+        "/api/v1/auth/login",
+        json={"email": "rel@example.com", "password": "secret123"},
     ).json()
+    headers = {"Authorization": f"Bearer {login['access_token']}"}
 
-    task_a = client.post("/api/v1/tasks/", json={"title": "Task A", "user_id": user["id"]}).json()
-    task_b = client.post("/api/v1/tasks/", json={"title": "Task B", "user_id": user["id"]}).json()
+    task_a = client.post("/api/v1/tasks/", json={"title": "Task A"}, headers=headers).json()
+    task_b = client.post("/api/v1/tasks/", json={"title": "Task B"}, headers=headers).json()
 
-    assert task_a["user_id"] == user["id"]
-    assert task_b["user_id"] == user["id"]
+    assert task_a["user_id"] == task_b["user_id"]
 
-    response = client.get("/api/v1/tasks/", params={"user_id": user["id"]})
+    response = client.get(
+        "/api/v1/tasks/", params={"user_id": task_a["user_id"]}, headers=headers
+    )
     titles = {task["title"] for task in response.json()}
     assert titles == {"Task A", "Task B"}
 
 
 def test_user_task_orm_relationship_is_bidirectional(db_session):
-    user = User(name="ORM User", email="orm@example.com")
+    user = User(name="ORM User", email="orm@example.com", hashed_password=hash_password("x"))
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)
@@ -33,7 +41,9 @@ def test_user_task_orm_relationship_is_bidirectional(db_session):
 
 
 def test_deleting_a_user_cascades_to_their_tasks(db_session):
-    user = User(name="Cascade User", email="cascade@example.com")
+    user = User(
+        name="Cascade User", email="cascade@example.com", hashed_password=hash_password("x")
+    )
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)

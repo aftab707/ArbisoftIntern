@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import Contact from './Contact.jsx'
+import Contact from '@/pages/Contact/Contact.jsx'
 
 async function fillAndSubmit({ name, email, message }) {
   if (name) {

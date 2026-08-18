@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*
@@ -32,3 +35,11 @@ backend/**/__pycache__
 .pytest_cache
 .ruff_cache
 *.db
+
+# Python / week4-agentic-ai
+week4-agentic-ai/.venv
+week4-agentic-ai/venv
+week4-agentic-ai/week4env
+week4-agentic-ai/__pycache__
+week4-agentic-ai/**/__pycache__
+week4-agentic-ai/tool_calls.log
