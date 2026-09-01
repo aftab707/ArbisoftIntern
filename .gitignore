@@ -43,3 +43,11 @@ week4-agentic-ai/week4env
 week4-agentic-ai/__pycache__
 week4-agentic-ai/**/__pycache__
 week4-agentic-ai/tool_calls.log
+
+# Python / week5-mcp-orchestration
+week5-mcp-orchestration/.venv
+week5-mcp-orchestration/venv
+week5-mcp-orchestration/week5env
+week5-mcp-orchestration/__pycache__
+week5-mcp-orchestration/**/__pycache__
+week5-mcp-orchestration/agent_trace.log
