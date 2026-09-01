@@ -1,0 +1,5 @@
+mcp
+groq
+python-dotenv
+requests
+tavily-python
